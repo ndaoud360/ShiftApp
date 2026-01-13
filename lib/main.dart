@@ -1490,6 +1490,7 @@ class _MainScreenState extends State<MainScreen> {
                 onUpdateScript: _updateScript,
                 onDeleteScript: _deleteScript,
               ),
+              QuizTab(methods: _methods),
               const Shifting101Tab(),
             ],
           ),
@@ -1518,7 +1519,8 @@ class _MainScreenState extends State<MainScreen> {
                       Icons.auto_awesome, 'Methods'),
                   _buildNavItem(1, Icons.description_outlined,
                       Icons.description, 'Script'),
-                  _buildNavItem(2, Icons.school_outlined, Icons.school, '101'),
+                  _buildNavItem(2, Icons.quiz_outlined, Icons.quiz, 'Quiz'),
+                  _buildNavItem(3, Icons.school_outlined, Icons.school, '101'),
                 ],
               ),
             ),
@@ -3313,6 +3315,735 @@ Physically, no. But you can bring back memories, knowledge, and emotional experi
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ==================== QUIZ TAB ====================
+
+class QuizTab extends StatefulWidget {
+  final List<ShiftingMethod> methods;
+
+  const QuizTab({super.key, required this.methods});
+
+  @override
+  State<QuizTab> createState() => _QuizTabState();
+}
+
+class _QuizTabState extends State<QuizTab> {
+  int _currentQuestion = 0;
+  bool _quizComplete = false;
+  final Map<String, int> _scores = {
+    'visualization': 0,
+    'audio': 0,
+    'physical': 0,
+    'simple': 0,
+    'advanced': 0,
+    'emotional': 0,
+    'meditative': 0,
+  };
+
+  final List<Map<String, dynamic>> _questions = [
+    {
+      'question': 'How would you describe your imagination?',
+      'answers': [
+        {
+          'text': 'Very vivid - I can picture things clearly',
+          'scores': {'visualization': 3, 'advanced': 1}
+        },
+        {
+          'text': 'Pretty good - I can imagine with some effort',
+          'scores': {'visualization': 1, 'simple': 1}
+        },
+        {
+          'text': 'Not great - I struggle to visualize',
+          'scores': {'audio': 2, 'physical': 2, 'simple': 1}
+        },
+        {
+          'text': 'I prefer feeling over seeing',
+          'scores': {'emotional': 2, 'physical': 2}
+        },
+      ],
+    },
+    {
+      'question': 'What helps you relax the most?',
+      'answers': [
+        {
+          'text': 'Listening to music or ambient sounds',
+          'scores': {'audio': 3}
+        },
+        {
+          'text': 'Daydreaming or fantasizing',
+          'scores': {'visualization': 2, 'emotional': 1}
+        },
+        {
+          'text': 'Physical comfort - cozy blankets, warm bath',
+          'scores': {'physical': 3, 'simple': 1}
+        },
+        {
+          'text': 'Meditation or breathing exercises',
+          'scores': {'meditative': 3, 'advanced': 1}
+        },
+      ],
+    },
+    {
+      'question': 'How experienced are you with shifting?',
+      'answers': [
+        {
+          'text': 'Complete beginner - never tried',
+          'scores': {'simple': 3, 'physical': 1}
+        },
+        {
+          'text': 'Tried a few times but no success yet',
+          'scores': {'simple': 2, 'audio': 1}
+        },
+        {
+          'text': 'Some experience - felt symptoms before',
+          'scores': {'visualization': 1, 'advanced': 1}
+        },
+        {
+          'text': 'Experienced - shifted before or very close',
+          'scores': {'advanced': 3, 'meditative': 1}
+        },
+      ],
+    },
+    {
+      'question': 'When do you usually try to shift?',
+      'answers': [
+        {
+          'text': 'Right before falling asleep',
+          'scores': {'simple': 2, 'physical': 2}
+        },
+        {
+          'text': 'When I wake up in the middle of the night',
+          'scores': {'advanced': 3}
+        },
+        {
+          'text': 'During meditation or quiet time',
+          'scores': {'meditative': 3, 'visualization': 1}
+        },
+        {
+          'text': 'Whenever I have free time',
+          'scores': {'audio': 1, 'simple': 1}
+        },
+      ],
+    },
+    {
+      'question': 'What type of connection do you want with your DR?',
+      'answers': [
+        {
+          'text': 'Strong emotional bonds with people there',
+          'scores': {'emotional': 3, 'audio': 1}
+        },
+        {
+          'text': 'Exciting adventures and experiences',
+          'scores': {'visualization': 2, 'advanced': 1}
+        },
+        {
+          'text': 'Peaceful escape from daily life',
+          'scores': {'meditative': 2, 'simple': 1}
+        },
+        {
+          'text': 'Becoming my ideal self',
+          'scores': {'visualization': 1, 'physical': 1, 'advanced': 1}
+        },
+      ],
+    },
+    {
+      'question': 'How do you feel about counting during methods?',
+      'answers': [
+        {
+          'text': 'I like it - helps me focus',
+          'scores': {'simple': 2, 'visualization': 1}
+        },
+        {
+          'text': 'Neutral - can do it if needed',
+          'scores': {'audio': 1, 'simple': 1}
+        },
+        {
+          'text': 'I find it distracting',
+          'scores': {'emotional': 2, 'meditative': 1}
+        },
+        {
+          'text': 'I prefer pure intention/feeling',
+          'scores': {'advanced': 2, 'meditative': 2}
+        },
+      ],
+    },
+    {
+      'question': 'What sounds most appealing to you?',
+      'answers': [
+        {
+          'text': 'Climbing a rope or stairs to my DR',
+          'scores': {'physical': 3, 'visualization': 1}
+        },
+        {
+          'text': 'Dancing with someone from my DR',
+          'scores': {'emotional': 3, 'audio': 2}
+        },
+        {
+          'text': 'Falling asleep on a cloud floating to my DR',
+          'scores': {'simple': 2, 'visualization': 2}
+        },
+        {
+          'text': 'Entering the void and manifesting my DR',
+          'scores': {'advanced': 3, 'meditative': 2}
+        },
+      ],
+    },
+    {
+      'question': 'How patient are you during shifting attempts?',
+      'answers': [
+        {
+          'text': 'Very patient - I can focus for a long time',
+          'scores': {'meditative': 2, 'advanced': 2}
+        },
+        {
+          'text': 'Moderately patient',
+          'scores': {'visualization': 1, 'audio': 1}
+        },
+        {
+          'text': 'I prefer quicker methods',
+          'scores': {'simple': 2, 'physical': 1}
+        },
+        {
+          'text': 'I want to fall asleep and wake up shifted',
+          'scores': {'simple': 3}
+        },
+      ],
+    },
+    {
+      'question': 'Do you have a specific person you want to see in your DR?',
+      'answers': [
+        {
+          'text': 'Yes! Someone very important to me',
+          'scores': {'emotional': 3, 'audio': 1}
+        },
+        {
+          'text': 'Yes, but it\'s not the main focus',
+          'scores': {'visualization': 1, 'simple': 1}
+        },
+        {
+          'text': 'Not really - more about the place/experience',
+          'scores': {'visualization': 2, 'meditative': 1}
+        },
+        {
+          'text': 'I want to focus on becoming my DR self',
+          'scores': {'advanced': 2, 'physical': 1}
+        },
+      ],
+    },
+    {
+      'question': 'What\'s your biggest challenge with shifting?',
+      'answers': [
+        {
+          'text': 'Staying focused and not getting distracted',
+          'scores': {'audio': 2, 'simple': 2}
+        },
+        {
+          'text': 'Relaxing enough to let go',
+          'scores': {'physical': 2, 'meditative': 2}
+        },
+        {
+          'text': 'Believing it will actually work',
+          'scores': {'simple': 2, 'emotional': 1}
+        },
+        {
+          'text': 'Visualizing clearly',
+          'scores': {'audio': 3, 'emotional': 2, 'physical': 1}
+        },
+      ],
+    },
+  ];
+
+  List<Map<String, dynamic>> get _recommendedMethods {
+    // Find the top scoring categories
+    final sortedScores = _scores.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final topCategories = sortedScores.take(3).map((e) => e.key).toList();
+
+    // Map categories to method IDs
+    final Map<String, List<String>> categoryMethods = {
+      'visualization': [
+        'alice',
+        'sunni',
+        'mirror',
+        'elevator',
+        'train',
+        'staircase',
+        'falling',
+        'ferris',
+        'scroll',
+        'ocean'
+      ],
+      'audio': ['heartbeat', 'estelle', 'piano', 'eleven'],
+      'physical': ['rope', 'blanket', 'swingset', 'hug'],
+      'simple': ['pillow', 'intent', 'cloud', 'eye', 'raven'],
+      'advanced': ['wbtb', 'lucid', 'void', 'doubles', 'intent'],
+      'emotional': ['hug', 'heartbeat', 'estelle', 'piano'],
+      'meditative': ['meditate', 'void', 'intent', 'sunni'],
+    };
+
+    // Collect recommended method IDs
+    final Set<String> recommendedIds = {};
+    for (final category in topCategories) {
+      final methods = categoryMethods[category] ?? [];
+      recommendedIds.addAll(methods.take(3));
+    }
+
+    // Get actual method objects
+    final recommended = widget.methods
+        .where((m) => recommendedIds.contains(m.id))
+        .take(5)
+        .map((m) =>
+            {'method': m, 'reason': _getReasonForMethod(m.id, topCategories)})
+        .toList();
+
+    return recommended;
+  }
+
+  String _getReasonForMethod(String methodId, List<String> topCategories) {
+    final reasons = {
+      'raven': 'Great for beginners with simple counting and affirmations',
+      'julia': 'Perfect for those who respond well to affirmations',
+      'pillow': 'Simple and effortless - just set your intention',
+      'alice': 'Ideal for vivid imaginers who love fantasy',
+      'sunni': 'Best for those who can visualize waking up in their DR',
+      'intent': 'Pure intention method for experienced shifters',
+      'elevator': 'Great visualization with a clear journey',
+      'train': 'Perfect for those who enjoy travel imagery',
+      'rope': 'Excellent for kinesthetic/physical visualization',
+      'heartbeat': 'Ideal for emotional connection with DR people',
+      'mirror': 'Perfect for becoming your DR self',
+      'estelle': 'Great for emotional and musical connection',
+      'staircase': 'Simple visualization with counting',
+      'cloud': 'Gentle and relaxing for anxious shifters',
+      'wbtb': 'Highly effective for dedicated shifters',
+      'lucid': 'Great for experienced lucid dreamers',
+      'void': 'Advanced method for experienced meditators',
+      'eleven': 'Perfect for sensory deprivation approach',
+      'hug': 'Best for strong emotional connections',
+      'piano': 'Ideal for musical and emotional people',
+      'falling': 'Great for those who enjoy the falling sensation',
+      'blanket': 'Perfect for cozy, comfort-based shifting',
+      'doubles': 'Advanced method for becoming your DR self',
+      'ferris': 'Fun visualization for playful shifters',
+      'eye': 'Simple focus on opening eyes in DR',
+      'meditate': 'Ideal for experienced meditators',
+      'scroll': 'Perfect for fantasy lovers',
+      'ocean': 'Calming method for peaceful shifters',
+      'swingset': 'Playful and nostalgic visualization',
+    };
+    return reasons[methodId] ?? 'Matches your shifting style';
+  }
+
+  void _answerQuestion(Map<String, int> scores) {
+    setState(() {
+      scores.forEach((key, value) {
+        _scores[key] = (_scores[key] ?? 0) + value;
+      });
+
+      if (_currentQuestion < _questions.length - 1) {
+        _currentQuestion++;
+      } else {
+        _quizComplete = true;
+      }
+    });
+  }
+
+  void _restartQuiz() {
+    setState(() {
+      _currentQuestion = 0;
+      _quizComplete = false;
+      _scores.updateAll((key, value) => 0);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: _quizComplete ? _buildResults() : _buildQuiz(),
+    );
+  }
+
+  Widget _buildQuiz() {
+    final question = _questions[_currentQuestion];
+    final progress = (_currentQuestion + 1) / _questions.length;
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'FIND YOUR METHOD',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Answer ${_questions.length} questions to discover your ideal shifting method',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+          ),
+          const SizedBox(height: 20),
+
+          // Progress bar
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Question ${_currentQuestion + 1} of ${_questions.length}',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    '${(progress * 100).toInt()}%',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey[200],
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
+                  minHeight: 6,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+
+          // Question
+          Text(
+            question['question'],
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Answers
+          Expanded(
+            child: ListView.builder(
+              itemCount: (question['answers'] as List).length,
+              itemBuilder: (context, index) {
+                final answer = question['answers'][index];
+                return GestureDetector(
+                  onTap: () =>
+                      _answerQuestion(Map<String, int>.from(answer['scores'])),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.grey[200]!),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border:
+                                Border.all(color: Colors.grey[300]!, width: 2),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(
+                            answer['text'],
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Color(0xFF1A1A1A),
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResults() {
+    final recommended = _recommendedMethods;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'YOUR RESULTS',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Based on your answers, here are your recommended methods',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+          ),
+          const SizedBox(height: 24),
+
+          // Top result card
+          if (recommended.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '⭐ BEST MATCH',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    (recommended[0]['method'] as ShiftingMethod).name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    recommended[0]['reason'] as String,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 20),
+
+          // Other recommendations
+          const Text(
+            'Also recommended for you',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          ...recommended.skip(1).map((rec) {
+            final method = rec['method'] as ShiftingMethod;
+            final reason = rec['reason'] as String;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: NetworkImage(method.imageUrl),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          method.name,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          reason,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
+                ],
+              ),
+            );
+          }),
+
+          const SizedBox(height: 24),
+
+          // Your shifting profile
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Shifting Profile',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildProfileBar(
+                    'Visualization', _scores['visualization'] ?? 0),
+                _buildProfileBar('Audio/Sound', _scores['audio'] ?? 0),
+                _buildProfileBar(
+                    'Physical/Kinesthetic', _scores['physical'] ?? 0),
+                _buildProfileBar('Simplicity', _scores['simple'] ?? 0),
+                _buildProfileBar('Advanced', _scores['advanced'] ?? 0),
+                _buildProfileBar('Emotional', _scores['emotional'] ?? 0),
+                _buildProfileBar('Meditative', _scores['meditative'] ?? 0),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Retake button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: _restartQuiz,
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Retake Quiz',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF1A1A1A),
+                side: const BorderSide(color: Color(0xFF1A1A1A), width: 1.5),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 120),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileBar(String label, int score) {
+    final maxScore = 12;
+    final percentage = (score / maxScore).clamp(0.0, 1.0);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+              ),
+              Text(
+                '${(percentage * 100).toInt()}%',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: percentage,
+              backgroundColor: Colors.grey[200],
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
+              minHeight: 6,
+            ),
+          ),
+        ],
       ),
     );
   }
